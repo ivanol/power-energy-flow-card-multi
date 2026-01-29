@@ -1,7 +1,7 @@
 # power-energy-flow-card-multi
 A power (and in the future energy) distribution card with support for multiple batteries, generation sources and inverters, and complete control over where each device is displayed and how they connect.
 
-[!sample card](./doc/card.png?raw=true)
+[!sample card](https://github.com/ivanol/power-energy-flow-card-mult/blob/main/doc/card.png?raw=true)
 
 ## Goal
 

@@ -126,10 +126,12 @@ export class StandardDevice implements UpdateReceiver {
 
     private calcAnimationParams(line: DeviceConnection): [ballsize: number, freq: number] {
         const powerState = Math.abs(line._value) / this._config.max_power
-        if (powerState == 0) return [1, 1000]
-        const ballsize = Math.max(2, powerState * 10)
+        if (powerState == 0) return [0, 1000]
+        const ballsize = Math.max(4, powerState * 10)
         const direction = line._value > 0 ? 1 : -1
-        const freq = Math.max(1/powerState, 1) * direction
+        let freq = Math.max(1 / powerState, 1);
+        freq = Math.min(freq, 15);
+        freq *= direction
         return [ballsize, freq]
     }
 

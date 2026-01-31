@@ -70,6 +70,7 @@ export interface DeviceConfig {
     type: string; // inverter, battery, load, solar, grid, generator, etc. TODO - type this properly once we have a plan.
     connections: DeviceConnection[]
     max_power: number // Maximum input/output power. Used to determine line sizes and power flow visualisations.
+    percent_entity?: string // An entity that gives a percentage value for state of charge etc.
 }
 
 export interface CardConfig {

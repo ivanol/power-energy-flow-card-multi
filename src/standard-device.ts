@@ -52,6 +52,7 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
         for (const entity of [...config.power_sink, ...config.power_source, ...config.energy_sink, ...config.energy_source]) {
             updateSender.registerUpdateReceiver(entity, this);
         }
+        if(config.percent_entity) this._updateSender.registerUpdateReceiver(config.percent_entity, this);
     }
 
     get id(): string {
@@ -69,6 +70,8 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
         for (const entity of [...config.power_sink, ...config.power_source, ...config.energy_sink, ...config.energy_source]) {
             this._updateSender.registerUpdateReceiver(entity, this);
         }
+        if(this._config.percent_entity) this._updateSender.unregisterUpdateReceiver(this._config.percent_entity, this);
+        if(config.percent_entity) this._updateSender.registerUpdateReceiver(config.percent_entity, this);
         this._config = config;
     }
 
@@ -118,7 +121,7 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
 
     // Returns the html for the foreignObject in the middle of each circle.
     private getHtml(config: CardConfig, states: States): HtmlString {
-        var text: string = "";
+        let text: string = "";
         if (config.power_or_energy == "power") {
             const power = this.getPower(states)
             const icon = power >= 0 ? "mdi:arrow-bottom-left" : "mdi:arrow-top-right";
@@ -130,7 +133,19 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
                     <span class="consumption" id="consumption_${this._elementID}"><ha-icon class="small" icon="mdi:arrow-right"></ha-icon>${energyOut} kWh</span>`
         }
 
-        return `<ha-icon icon="${this._config.icon}"></ha-icon><br>${text}<br>${this._config.name}` as HtmlString;
+        let percent = ""
+        let main_icon = this._config.icon
+        if (this._config.percent_entity && states[this._config.percent_entity] && states[this._config.percent_entity].state !== "unavailable" && states[this._config.percent_entity].state !== "unknown") {
+            let pct = Math.round(parseFloat(states[this._config.percent_entity].state)*10)/10
+            percent = `<div id="percent_${this._elementID}">${pct}%</div><br>`
+            if (main_icon == "") {
+                let pctd = Math.floor(pct / 10) * 10
+                if (pctd > 100) pctd = 100
+                if(pctd<10) pctd = 10
+                main_icon = `mdi:battery-${pctd}`
+            }
+        }
+        return `${percent}<ha-icon icon="${main_icon}"></ha-icon><br>${text}<br>${this._config.name}` as HtmlString;
     }
 
     private calcAnimationParams(line: DeviceConnection): [ballsize: number, freq: number] {

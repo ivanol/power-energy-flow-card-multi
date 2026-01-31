@@ -67,7 +67,7 @@ export class ConfigManager {
         if (!d.id) throw new Error("Device must have an id")
         if (!("xPos" in d)) throw new Error("Device needs an xPos")
         if (!("yPos" in d)) throw new Error("Device needs a yPos")
-        this.validateUnknownKeys(d, ["xPos", "yPos", "id", "name", "energy_sink", "energy_source", "power_source", "power_sink", "max_power", "connections", "icon", "percent_entity"], "Unknown key in device: ")
+        this.validateUnknownKeys(d, ["xPos", "yPos", "id", "name", "energy_sink", "energy_source", "power_source", "power_sink", "max_power", "connections", "icon", "percent_entity", "floor"], "Unknown key in device: ")
 
         let result: DeviceConfig = {
             name: d.name ? d.name : d.id,
@@ -80,6 +80,7 @@ export class ConfigManager {
             xPos: d.xPos,
             yPos: d.yPos,
             type: "grid", // FIXME / TODO not used
+            floor: d.floor ? d.floor : 0,
             connections: [],
             max_power: d.max_power ? d.max_power : 20,
             percent_entity: d.percent_entity ? d.percent_entity : undefined

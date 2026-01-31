@@ -94,18 +94,21 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
         this._valueCache.power = this.defaultRound(
             this.sumEntities(states, this._config.power_source)
             - this.sumEntities(states, this._config.power_sink));
+        if(Math.abs(this._valueCache.power) < this._config.floor) this._valueCache.power = 0
         return this._valueCache.power
     }
 
     getEnergyIn(states: States): number {
         if ("energyin" in this._valueCache) return this._valueCache.energyin
         this._valueCache.energyin = this.defaultRound(this.sumEntities(states, this._config.energy_sink));
+        if(Math.abs(this._valueCache.energyin) < this._config.floor) this._valueCache.energyin = 0
         return this._valueCache.energyin
     }
 
     getEnergyOut(states: States): number {
         if ("energyout" in this._valueCache) return this._valueCache.energyout
         this._valueCache.energyout = this.defaultRound(this.sumEntities(states, this._config.energy_source));
+        if(Math.abs(this._valueCache.energyout) < this._config.floor) this._valueCache.energyout = 0
         return this._valueCache.energyout
     }
 

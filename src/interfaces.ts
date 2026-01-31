@@ -55,6 +55,7 @@ export interface DeviceConnection {
     // sign will either have to create a template helper, or record connection in oppposite
     // direction.
     value?: number // We store calculated flow down this connection here.
+    internal?: boolean // If true, this connection explains where a device gets its power/energy from, but doesn't subtract from the devices value.
 }
 
 export interface DeviceConfig {

@@ -76,8 +76,10 @@ export class FlowCalculator {
         if (c.value !== null)
             throw new Error(`Connection from ${c.fromDevice.id} to ${c.c.target} already has value assigned`)
         c.value = value
-        const fromRem = this._deviceNetFlow.get(c.fromDevice.id)
-        this._deviceNetFlow.set(c.fromDevice.id, fromRem + value)
+        if (!c.c.internal) {
+            const fromRem = this._deviceNetFlow.get(c.fromDevice.id)
+            this._deviceNetFlow.set(c.fromDevice.id, fromRem + value)
+        }
         const toDevice = this._deviceIdMap.get(c.c.target)
         const toRem = this._deviceNetFlow.get(toDevice.id)
         this._deviceNetFlow.set(toDevice.id, toRem - value)

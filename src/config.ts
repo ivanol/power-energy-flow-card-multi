@@ -98,7 +98,7 @@ export class ConfigManager {
     }
 
     private validateConnection(connection: any): DeviceConnection {
-        this.validateUnknownKeys(connection, ["desc", "target", "color", "mode", "entity"], "Unknown key in connection: ")
+        this.validateUnknownKeys(connection, ["desc", "target", "color", "mode", "entity", "internal"], "Unknown key in connection: ")
         if (!connection) throw new Error("Empty connection definition")
         if (!connection.desc) throw new Error("Connection need to have a description of its route")
         if (!connection.target) throw new Error("Connection need to have a target")
@@ -107,7 +107,8 @@ export class ConfigManager {
             target: connection.target,
             color: connection.color ? connection.color : "black",
             mode: connection.mode,
-            entity: connection.entity ? connection.entity : undefined
+            entity: connection.entity ? connection.entity : undefined,
+            internal: connection.internal ? connection.internal : false
         }
     }
 }

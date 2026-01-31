@@ -1,4 +1,4 @@
-import { DeviceConfig, UpdateReceiver, UpdateSender, States, CardConfig, Drawer, DeviceConnection, HtmlString } from "./interfaces";
+import { DeviceConfig, UpdateReceiver, UpdateSender, States, CardConfig, Drawer, DeviceConnection, HtmlString, FlowDevice } from "./interfaces";
 import { SVGDrawer } from "./svg-drawer";
 /*
  * A device represents both a conceptual device (eg. battery or inverter), and also the area
@@ -22,7 +22,7 @@ import { SVGDrawer } from "./svg-drawer";
  * loads - our Garage device can have this CT clamp in power_in, and the EV charger in power_out,
  * meaning calculated power is Garage power consumption not including EV).
  */
-export class StandardDevice implements UpdateReceiver {
+export class StandardDevice implements UpdateReceiver, FlowDevice {
     _config: DeviceConfig;
     _card: CardConfig
     _updateSender: UpdateSender;
@@ -103,6 +103,14 @@ export class StandardDevice implements UpdateReceiver {
         return this._valueCache.energyout
     }
 
+    power_or_energy(states: States): number {
+        if (this._card.power_or_energy == "power") {
+            return this.getPower(states)
+        } else {
+            return this.getEnergyOut(states) - this.getEnergyIn(states)
+        }
+    }
+
     private defaultRound(value: number): number {
         return Math.round(value*100)/100;
     }
@@ -112,7 +120,7 @@ export class StandardDevice implements UpdateReceiver {
         var text: string = "";
         if (config.power_or_energy == "power") {
             const power = this.getPower(states)
-            const icon = power >= 0 ? "mdi:arrow-right" : "mdi:arrow-left";
+            const icon = power >= 0 ? "mdi:arrow-bottom-left" : "mdi:arrow-top-right";
             text = `<span class="return" id="return_${this._elementID}"><ha-icon class="small" icon="${icon}"></ha-icon>${Math.abs(power)} kW</span>`
         } else {
             const energyIn = this.getEnergyIn(states);
@@ -125,16 +133,15 @@ export class StandardDevice implements UpdateReceiver {
     }
 
     private calcAnimationParams(line: DeviceConnection): [ballsize: number, freq: number] {
-        const powerState = Math.abs(line._value) / this._config.max_power
+        const powerState = Math.abs(line.value) / this._config.max_power
         if (powerState == 0) return [0, 1000]
         const ballsize = Math.max(4, powerState * 10)
-        const direction = line._value > 0 ? 1 : -1
+        const direction = line.value > 0 ? 1 : -1
         let freq = Math.max(1 / powerState, 1);
         freq = Math.min(freq, 15);
         freq *= direction
         return [ballsize, freq]
     }
-
 
     getPathHtml(config: CardConfig, states: States, drawer: Drawer): HtmlString {
         this._elements.needs_reload = true

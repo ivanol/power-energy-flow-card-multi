@@ -17,9 +17,10 @@ export class ConfigManager {
             maxY: 0,
             width: 400,
             height: 300,
-            circle_radius: config.circle_radius ? config.circle_radius : 40
+            circle_radius: config.circle_radius ? config.circle_radius : 40,
+            debug: config.debug ? config.debug : false
         }
-        this.validateUnknownKeys(config, ["title", "devices", "circle_radius", "type"], "Unknown key in card config: ")
+        this.validateUnknownKeys(config, ["title", "devices", "circle_radius", "type", "debug"], "Unknown key in card config: ")
 
         if (!config.devices || config.devices.length == 0) throw new Error("No devices defined")
 
@@ -96,7 +97,7 @@ export class ConfigManager {
     }
 
     private validateConnection(connection: any): DeviceConnection {
-        this.validateUnknownKeys(connection, ["desc", "target", "color", "mode"], "Unknown key in connection: ")
+        this.validateUnknownKeys(connection, ["desc", "target", "color", "mode", "entity"], "Unknown key in connection: ")
         if (!connection) throw new Error("Empty connection definition")
         if (!connection.desc) throw new Error("Connection need to have a description of its route")
         if (!connection.target) throw new Error("Connection need to have a target")
@@ -104,7 +105,8 @@ export class ConfigManager {
             desc: `${connection.desc}`, // Some paths are valid numbers, but need interpreting as strings
             target: connection.target,
             color: connection.color ? connection.color : "black",
-            mode: connection.mode
+            mode: connection.mode,
+            entity: connection.entity ? connection.entity : undefined
         }
     }
 }

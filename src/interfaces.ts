@@ -54,7 +54,7 @@ export interface DeviceConnection {
     // No ability to reverse this, so if available entities have wrong
     // sign will either have to create a template helper, or record connection in oppposite
     // direction.
-    _value?: number // We store working info in here when calculating power/energy flows.
+    value?: number // We store calculated flow down this connection here.
 }
 
 export interface DeviceConfig {
@@ -81,12 +81,10 @@ export interface CardConfig {
     width: number;
     height: number;
     circle_radius: number;
+    debug?: boolean;
 }
-
-export interface ElectricalDevice {
-    name: string;
-    value: number; // power or energy
-    xPos: number;
-    yPos: number;
-    type: string; // inverter, battery, load, solar, grid, generator, etc.
+export interface FlowDevice {
+    power_or_energy(states: States): number
+    id: string
+    connections: DeviceConnection[]
 }

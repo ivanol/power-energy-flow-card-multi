@@ -1,5 +1,20 @@
-export type HassData = any
-export type States = any
+export type States = {
+    [entityId: string]: {
+        state: string;
+        attributes: {
+            [key: string]: any;
+        };
+        last_changed: string;
+        last_updated: string;
+    };
+}
+
+export type HassData = {
+    states: States
+}
+
+declare const HtmlStringBrand: unique symbol;
+export type HtmlString = string & { [HtmlStringBrand]: never };
 
 export interface UpdateReceiver {
     // Send an update. Entity that triggered it is in string.
@@ -19,7 +34,7 @@ export interface UpdateReceiver {
 export interface Drawer {
     getCoordX(xPos: number): number
     getCoordY(yPos: number): number
-    getPathSvg(startDeviceX: number, startDeviceY: number, pathDesc: string, color: string, id: string, ballRadius: number, ballSpeed: number): string
+    getPathSvg(startDeviceX: number, startDeviceY: number, pathDesc: string, color: string, id: string, ballRadius: number, ballSpeed: number): HtmlString
 }
 
 export interface UpdateSender {

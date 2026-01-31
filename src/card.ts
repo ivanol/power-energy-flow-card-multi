@@ -1,13 +1,13 @@
 import { ConfigManager } from "./config";
 import { css } from "./css";
-import { CardConfig, UpdateReceiver, UpdateSender } from "./interfaces";
+import { CardConfig, HassData, UpdateReceiver, UpdateSender } from "./interfaces";
 import { StandardDevice } from "./standard-device";
 import { SVGDrawer } from "./svg-drawer";
 
 export class PowerEnergyFlowMulti extends HTMLElement implements UpdateSender {
     // private properties
     _config: any;
-    _hass: any;
+    _hass: HassData;
     _elements: any = {};
     _updateReceivers: Map<string, Set<UpdateReceiver>> = new Map();
     _entityStateUpdates: Map<string, string> = new Map();
@@ -194,7 +194,7 @@ export class PowerEnergyFlowMulti extends HTMLElement implements UpdateSender {
             if(newState && lastUpdated !== newState.last_updated) {
                 this._entityStateUpdates.set(entity, newState.last_updated);
                 for (const receiver of receivers) {
-                    const needsRerender = receiver.hassUpdate(entity, this._hass);
+                    const needsRerender = receiver.hassUpdate(entity, this._hass.states);
                     if (needsRerender) this._needsRerender = true;
                 }
                 if(receivers.size>0) relevantUpdate = true
@@ -208,10 +208,10 @@ export class PowerEnergyFlowMulti extends HTMLElement implements UpdateSender {
         this.calculatePowerFlows()
 
         if (this._needsRerender) {
-            //console.log("Full rerender")
+            console.log("Full rerender")
             this.forceRerender();
         } else {
-            //console.log("Doing incremental update")
+            console.log("Doing incremental update")
             for (const device of this._devices)
                 device.incrementalUpdate(this._elements.card)
         }

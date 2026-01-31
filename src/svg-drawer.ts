@@ -23,7 +23,7 @@
  *  After the ':' is (yet to be implemented or defined) offset data which will
  *  help to avoid line collisions. For now we avoid.
  */
-import { CardConfig, Drawer } from "./interfaces";
+import { CardConfig, Drawer, HtmlString } from "./interfaces";
 
 export class SVGDrawer implements Drawer {
     _xsize: number
@@ -97,8 +97,8 @@ export class SVGDrawer implements Drawer {
     }
 
     // Parse a path description to an svg path string, with animated moving ball to indicate flow.
-    getPathSvg(startDeviceX: number, startDeviceY: number, pathDesc: string, color: string, id: string, ballRadius: number, ballSpeed: number): string {
-        if(typeof(pathDesc)!="string" || pathDesc.length<2) return ""
+    getPathSvg(startDeviceX: number, startDeviceY: number, pathDesc: string, color: string, id: string, ballRadius: number, ballSpeed: number): HtmlString {
+        if(typeof(pathDesc)!="string" || pathDesc.length<2) return "" as HtmlString
         const commands = pathDesc.trim().split(/\s+/);
         let x = startDeviceX
         let y = startDeviceY
@@ -108,14 +108,14 @@ export class SVGDrawer implements Drawer {
             let [nx, ny, offset, error] = this.getNextDeviceCoords(x, y, cmd)
             if (error.length > 0) {
                 console.log(error)
-                return ""
+                return "" as HtmlString
             }
             x = nx
             y = ny
             coords.push([this.getCoordX(x), this.getCoordY(y)])
         }
 
-        if (coords.length < 2) return ""
+        if (coords.length < 2) return "" as HtmlString
 
         let [sx, sy] = this.midPointCoord(coords[1], coords[0], this._circle_radius)
         let pathSvg = `M ${sx} ${sy}`;
@@ -135,7 +135,7 @@ export class SVGDrawer implements Drawer {
                     <mpath xlink:href="#${id}"></mpath>
                 </animateMotion>
             </circle>`
-        return path+animate
+        return path+animate as HtmlString
     }
 
 }

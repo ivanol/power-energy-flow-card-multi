@@ -1,4 +1,4 @@
-import { DeviceConfig, UpdateReceiver, UpdateSender, States, CardConfig, Drawer, DeviceConnection } from "./interfaces";
+import { DeviceConfig, UpdateReceiver, UpdateSender, States, CardConfig, Drawer, DeviceConnection, HtmlString } from "./interfaces";
 import { SVGDrawer } from "./svg-drawer";
 /*
  * A device represents both a conceptual device (eg. battery or inverter), and also the area
@@ -108,7 +108,7 @@ export class StandardDevice implements UpdateReceiver {
     }
 
     // Returns the html for the foreignObject in the middle of each circle.
-    private getHtml(config: CardConfig, states: States): string {
+    private getHtml(config: CardConfig, states: States): HtmlString {
         var text: string = "";
         if (config.power_or_energy == "power") {
             const power = this.getPower(states)
@@ -121,7 +121,7 @@ export class StandardDevice implements UpdateReceiver {
                     <span class="consumption" id="consumption_${this._elementID}"><ha-icon class="small" icon="mdi:arrow-right"></ha-icon>${energyOut} kWh</span>`
         }
 
-        return `<ha-icon icon="${this._config.icon}"></ha-icon><br>${text}<br>${this._config.name}`
+        return `<ha-icon icon="${this._config.icon}"></ha-icon><br>${text}<br>${this._config.name}` as HtmlString;
     }
 
     private calcAnimationParams(line: DeviceConnection): [ballsize: number, freq: number] {
@@ -135,7 +135,8 @@ export class StandardDevice implements UpdateReceiver {
         return [ballsize, freq]
     }
 
-    getPathHtml(config: CardConfig, states: States, drawer: Drawer): string {
+
+    getPathHtml(config: CardConfig, states: States, drawer: Drawer): HtmlString {
         this._elements.needs_reload = true
         const x1 = drawer.getCoordX(this._config.xPos);
         const y1 = drawer.getCoordY(this._config.yPos);
@@ -154,7 +155,7 @@ export class StandardDevice implements UpdateReceiver {
             let [ballsize, freq] = this.calcAnimationParams(l)
             paths += drawer.getPathSvg(this._config.xPos, this._config.yPos, l.desc, l.color, id, ballsize, freq)
         }
-        return node+paths
+        return node+paths as HtmlString;
     }
 
     // Receive updated values. As we can deal with this entirely from incrementalUpdate() without a full redraw

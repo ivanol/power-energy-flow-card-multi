@@ -81,7 +81,9 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
         for (const entityId of entityIds) {
             const stateObj = states[entityId];
             if (stateObj && stateObj.state !== "unavailable" && stateObj.state !== "unknown") {
-                result += parseFloat(stateObj.state);
+                const unit = stateObj.attributes && stateObj.attributes.unit_of_measurement ? stateObj.attributes.unit_of_measurement : "";
+                const factor = unit == "W" || unit == "Wh" ? 0.001 : 1; // convert W to kW, Wh to kWh
+                result += parseFloat(stateObj.state)*factor;
             }
         }
         return result;
@@ -151,7 +153,7 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
     private calcAnimationParams(line: DeviceConnection): [ballsize: number, freq: number] {
         const powerState = Math.abs(line.value) / this._config.max_power
         if (powerState == 0) return [0, 1000]
-        const ballsize = Math.max(4, powerState * 10)
+        const ballsize = Math.min(Math.max(4, powerState * 10), 10)
         const direction = line.value > 0 ? 1 : -1
         let freq = Math.max(1 / powerState, 1);
         freq = Math.min(freq, 15);

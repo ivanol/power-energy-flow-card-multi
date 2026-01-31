@@ -3,6 +3,10 @@ import { CardConfig, DeviceConfig, DeviceConnection } from "./interfaces";
 
 export class ConfigManager {
 
+    static cardKeys = ["title", "devices", "circle_radius", "type", "debug", "grid_options"]
+    static deviceKeys = ["xPos", "yPos", "id", "name", "energy_sink", "energy_source", "power_source", "power_sink", "max_power", "connections", "icon", "percent_entity", "floor"]
+    static connectionKeys = ["desc", "target", "color", "mode", "entity", "internal"]
+
     // Takes a hass configuration object, and returns a valid CardConfig, or an error.
     // This either converts the Hass config into a valid Typescript object so we know
     // everything we need is there (filling in default values as it goes), or raises
@@ -20,7 +24,7 @@ export class ConfigManager {
             circle_radius: config.circle_radius ? config.circle_radius : 40,
             debug: config.debug ? config.debug : false
         }
-        this.validateUnknownKeys(config, ["title", "devices", "circle_radius", "type", "debug"], "Unknown key in card config: ")
+        this.validateUnknownKeys(config, ConfigManager.cardKeys, "Unknown key in card config: ")
 
         if (!config.devices || config.devices.length == 0) throw new Error("No devices defined")
 
@@ -67,7 +71,7 @@ export class ConfigManager {
         if (!d.id) throw new Error("Device must have an id")
         if (!("xPos" in d)) throw new Error("Device needs an xPos")
         if (!("yPos" in d)) throw new Error("Device needs a yPos")
-        this.validateUnknownKeys(d, ["xPos", "yPos", "id", "name", "energy_sink", "energy_source", "power_source", "power_sink", "max_power", "connections", "icon", "percent_entity", "floor"], "Unknown key in device: ")
+        this.validateUnknownKeys(d, ConfigManager.deviceKeys, "Unknown key in device: ")
 
         let result: DeviceConfig = {
             name: d.name ? d.name : d.id,
@@ -99,7 +103,7 @@ export class ConfigManager {
     }
 
     private validateConnection(connection: any): DeviceConnection {
-        this.validateUnknownKeys(connection, ["desc", "target", "color", "mode", "entity", "internal"], "Unknown key in connection: ")
+        this.validateUnknownKeys(connection, ConfigManager.connectionKeys, "Unknown key in connection: ")
         if (!connection) throw new Error("Empty connection definition")
         if (!connection.desc) throw new Error("Connection need to have a description of its route")
         if (!connection.target) throw new Error("Connection need to have a target")

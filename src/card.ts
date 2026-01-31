@@ -23,7 +23,7 @@ export class PowerEnergyFlowMulti extends HTMLElement implements UpdateSender {
         devices: [],
         maxX: 0,
         maxY: 0,
-        width: 400,
+        width: 200,
         height: 300,
         circle_radius: 40
     };
@@ -47,6 +47,17 @@ export class PowerEnergyFlowMulti extends HTMLElement implements UpdateSender {
     set hass(hass: any) {
         this._hass = hass;
         this.doUpdateHass();
+    }
+
+    connectedCallback() {
+        this._resizeObserver = new ResizeObserver((entries) => {
+            for (let entry of entries) {
+                console.log("Resize observed:", entry.contentRect.width, entry.contentRect.height);
+                this._cardConfig.width = entry.contentRect.width;
+                this.forceRerender();
+            }
+        });
+        this._resizeObserver.observe(this);
     }
 
     onClicked() {
@@ -104,7 +115,7 @@ export class PowerEnergyFlowMulti extends HTMLElement implements UpdateSender {
     }
 
     doCard() {
-        this._cardConfig.width = 466;
+        //this._cardConfig.width = 466;
         this._cardConfig.height = (this._cardConfig.maxY + 1) * 100;
 
         let drawer = new SVGDrawer(this._cardConfig)

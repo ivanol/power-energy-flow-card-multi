@@ -1,5 +1,9 @@
 export const css: string = `
-    .error {
+:host {
+    display: block;
+    width: 100%;
+}
+.error {
         text-color: red;
     }
     .error.hidden { display: none; }

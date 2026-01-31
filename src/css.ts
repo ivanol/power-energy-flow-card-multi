@@ -29,5 +29,10 @@ export const css: string = `
   .hidden {
     display: none;
   }
+  .pefcm-hidden-line {
+    stroke-width: 0.2 !important;
+    //stroke: transparent !important;
+    //color: gray !important;
+  }
 `;
 

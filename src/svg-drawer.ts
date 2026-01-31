@@ -127,9 +127,10 @@ export class SVGDrawer implements Drawer {
                 pathSvg += ` L ${ex} ${ey}`
             }
         }
-        let keyPoints = ballSpeed >0 ? "0;1" : "1;0"
+        let keyPoints = ballSpeed > 0 ? "0;1" : "1;0"
+        const pathclass = ballRadius == 0 ? 'class="pefcm-hidden-line"' : ""
 
-        const path = `<path id="${id}" style="stroke: ${color};" vector-effect="non-scaling-stroke" d="${pathSvg}"></path>`
+        const path = `<path id="${id}" ${pathclass} style="stroke: ${color};" vector-effect="non-scaling-stroke" d="${pathSvg}"></path>`
         const animate = `<circle id="${id}_circle" r="${ballRadius}" style="fill: ${color};" class="grid" vector-effect="non-scaling-stroke">
                 <animateMotion id="${id}_animate" repeatCount="indefinite" calcMode="linear" dur="${Math.abs(ballSpeed)}s" keyPoints="${keyPoints}" keyTimes="0;1">
                     <mpath xlink:href="#${id}"></mpath>

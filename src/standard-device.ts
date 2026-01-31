@@ -31,6 +31,7 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
     _elements: {
         circles?: HTMLElement[],
         animations?: HTMLElement[],
+        lines?: HTMLElement[],
         circleHtml?: HTMLElement,
         needs_reload: boolean
     }
@@ -178,12 +179,14 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
         this._elements.circleHtml = card.querySelector(`#cconts_${this._elementID}`)
         this._elements.circles = []
         this._elements.animations = []
+        this._elements.lines = []
         let lcnt = 1
         for (const l of this.connections) {
             const k = `#line_${this._elementID}_${lcnt}`
             lcnt += 1
             this._elements.circles.push(card.querySelector(k + "_circle"))
             this._elements.animations.push(card.querySelector(k + "_animate"))
+            this._elements.lines.push(card.querySelector(k))
             //console.log("Finding circle and animate for ", this.id, "called", k+"_circle", k+"_animate")
         }
         this._elements.needs_reload = false
@@ -198,6 +201,11 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
                 let keyPoints = ballSpeed > 0 ? "0;1" : "1;0"
                 this._elements.animations[i].setAttribute("dur", `${Math.abs(ballSpeed)}`)
                 this._elements.animations[i].setAttribute("keyPoints", keyPoints)
+                if(this.connections[i].value==0){
+                    this._elements.lines[i].classList.add("pefcm-hidden-line");
+                } else {
+                    this._elements.lines[i].classList.remove("pefcm-hidden-line");
+                }
             }
         }
         this._elements.circleHtml.innerHTML = this.getHtml(this._card, this._hass_states)

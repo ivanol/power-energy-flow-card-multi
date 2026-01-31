@@ -68,8 +68,7 @@ export interface DeviceConfig {
     xPos: number;
     yPos: number;
     type: string; // inverter, battery, load, solar, grid, generator, etc. TODO - type this properly once we have a plan.
-    group: string; // Items within a group share an electrical connection. Used for displaying lines.
-    lines: DeviceConnection[]
+    connections: DeviceConnection[]
     max_power: number // Maximum input/output power. Used to determine line sizes and power flow visualisations.
 }
 

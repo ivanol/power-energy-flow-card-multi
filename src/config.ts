@@ -54,7 +54,7 @@ export class ConfigManager {
         for (const d of config.devices)
             s.add(d.id)
         for (const d of config.devices) {
-            for (const c of d.lines) {
+            for (const c of d.connections) {
                 if (!s.has(c.target))
                     throw new Error(`Connection target "${c.target}" doesn't exist`)
             }
@@ -79,8 +79,7 @@ export class ConfigManager {
             xPos: d.xPos,
             yPos: d.yPos,
             type: "grid", // FIXME / TODO not used
-            group: "grid", // FIXME / TODO not used
-            lines: [],
+            connections: [],
             max_power: d.max_power ? d.max_power : 20
         }
 
@@ -90,7 +89,7 @@ export class ConfigManager {
 
         if (d.connections) {
             for (const c of d.connections)
-                result.lines.push(this.validateConnection(c))
+                result.connections.push(this.validateConnection(c))
         }
 
         return result
@@ -108,47 +107,4 @@ export class ConfigManager {
             mode: connection.mode
         }
     }
-
-/*
-    title: "PEFCM Card",
-        type: "power",
-        maxX: 0,
-        maxY: 0,
-        width: 400,
-        height: 300,
-        circle_radius: 40,
-        devices: [
-            {
-                id: "grid",
-                name: "Grid",
-                icon: "mdi:transmission-tower",
-                power_sink: ["sensor.feed_in_power"],
-                power_source: ["sensor.grid_power"],
-                energy_sink: ["sensor.feed_in_power"], // Just reuse for testing - saves making lots of helpers.
-                energy_source: ["sensor.grid_power"],
-                xPos: 0,
-                yPos: 1,
-                type: "grid",
-                group: "main",
-                lines: [
-                    {
-                        desc: "30.5 62 90.5",
-                        target: "shed",
-                        color: "red"
-                    }, {
-                        desc: "62",
-                        target: "home",
-                        color: "blue",
-                        mode: "onedirection"
-                    }, {
-                        desc: "21 61",
-                        target: "battery",
-                        color: "orange"
-                    }
-                    //this._cardInnerHtml += drawer.getPathSvg(1, 2, "90.4 81.2 70.4")
-                ],
-                max_power: 15
-            }, {
-
-    }*/
 }

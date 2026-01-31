@@ -57,8 +57,8 @@ export class StandardDevice implements UpdateReceiver {
         return this._config.id
     }
 
-    get lines(): DeviceConnection[] {
-        return this._config.lines
+    get connections(): DeviceConnection[] {
+        return this._config.connections
     }
 
     updateConfig(config: DeviceConfig) {
@@ -149,7 +149,7 @@ export class StandardDevice implements UpdateReceiver {
         </foreignObject>`;
         let paths = ""
         let lcnt = 1
-        for (const l of this._config.lines) {
+        for (const l of this._config.connections) {
             const id = `line_${this._elementID}_${lcnt}`
             lcnt += 1
             let [ballsize, freq] = this.calcAnimationParams(l)
@@ -172,7 +172,7 @@ export class StandardDevice implements UpdateReceiver {
         this._elements.circles = []
         this._elements.animations = []
         let lcnt = 1
-        for (const l of this.lines) {
+        for (const l of this.connections) {
             const k = `#line_${this._elementID}_${lcnt}`
             lcnt += 1
             this._elements.circles.push(card.querySelector(k + "_circle"))
@@ -184,8 +184,8 @@ export class StandardDevice implements UpdateReceiver {
 
     incrementalUpdate(card: HTMLElement) {
         this.searchElements(card)
-        for (let i = 0; i < this.lines.length; i++) {
-            const [ballsize, ballSpeed] = this.calcAnimationParams(this.lines[i])
+        for (let i = 0; i < this.connections.length; i++) {
+            const [ballsize, ballSpeed] = this.calcAnimationParams(this.connections[i])
             if (this._elements.circles[i]) this._elements.circles[i].setAttribute("r", `${ballsize}`)
             if (this._elements.animations[i]) {
                 let keyPoints = ballSpeed > 0 ? "0;1" : "1;0"

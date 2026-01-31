@@ -167,12 +167,12 @@ export class PowerEnergyFlowMulti extends HTMLElement implements UpdateSender {
         for (const device of this._devices) {
             deviceIdMap.set(device.id, device)
             device.remainingValue = this._cardConfig.power_or_energy == "energy" ? device.getEnergyOut(this._hass?.states) - device.getEnergyIn(this._hass?.states) : device.getPower(this._hass?.states)
-            for (const l of device.lines) {
+            for (const l of device.connections) {
                 l._value = 0
             }
         }
         for (const device of this._devices) {
-            for (const l of device.lines) {
+            for (const l of device.connections) {
                 let target = deviceIdMap.get(l.target)
                 //console.log('Checking', device.id, '-->', l.target, device.remainingValue, target.remainingValue)
                 if (target.remainingValue * device.remainingValue >= 0) continue // Either one empty, both exporting, or both importing.

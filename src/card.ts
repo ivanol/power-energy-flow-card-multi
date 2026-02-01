@@ -53,7 +53,6 @@ export class PowerEnergyFlowMulti extends HTMLElement implements UpdateSender {
     connectedCallback() {
         this._resizeObserver = new ResizeObserver((entries) => {
             for (let entry of entries) {
-                console.log("Resize observed:", entry.contentRect.width, entry.contentRect.height);
                 this._cardConfig.width = entry.contentRect.width;
                 this.forceRerender();
             }

@@ -129,6 +129,7 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
         return Math.round(value*100)/100;
     }
 
+    // Work out whihc display config we should use. We
     private getDisplayConfig(card: CardConfig, states: States, type: "circle" | "icon" | "text"): DisplayConfig {
         let poe = this.power_or_energy(states)
         let activitySuffix = poe > 0 ? "-source" : poe < 0 ? "-sink" : "-inactive"
@@ -139,11 +140,12 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
         if (activitySuffix == "-source" || activitySuffix == "-sink") keys.push(`display-${type}-active`)
         else keys.push(`display-${type}-inactive`)
         keys.push(`display-${type}`)
-        keys.push(`display-${activitySuffix}`)
+        keys.push(`display${activitySuffix}`)
         if (activitySuffix == "-source" || activitySuffix == "-sink") keys.push(`display-active`)
         else keys.push(`display-inactive`)
         keys.push('display')
 
+        if(this._config.id=="grid") console.log("Display config keys to check:", keys)
         for (const k of keys) {
             if (k in this._config.display) {
                 return this._config.display[k]

@@ -25,7 +25,8 @@ export class PowerEnergyFlowMulti extends HTMLElement implements UpdateSender {
         maxY: 0,
         width: 200,
         height: 300,
-        circle_radius: 40
+        circle_radius: 40,
+        display: {}
     };
 
     // lifecycle

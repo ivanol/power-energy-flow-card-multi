@@ -136,8 +136,12 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
         // Look for most specific display config first.
         let keys: string[] = []
         keys.push(`display-${type}${activitySuffix}`)
-        if(activitySuffix=="-source" || activitySuffix=="-sink") keys.push(`display-${type}-active`)
+        if (activitySuffix == "-source" || activitySuffix == "-sink") keys.push(`display-${type}-active`)
+        else keys.push(`display-${type}-inactive`)
         keys.push(`display-${type}`)
+        keys.push(`display-${activitySuffix}`)
+        if (activitySuffix == "-source" || activitySuffix == "-sink") keys.push(`display-active`)
+        else keys.push(`display-inactive`)
         keys.push('display')
 
         for (const k of keys) {
@@ -145,6 +149,11 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
                 return this._config.display[k]
             }
         }
+
+        for (const k of keys)
+            if (k in this._card.display)
+                return this._card.display[k]
+
         return { color: "black", size: 1, circle_radius: -1, hidden: false }
     }
 
@@ -176,7 +185,7 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
                 main_icon = `mdi:battery-${pctd}`
             }
         }
-        return `${percent}<ha-icon icon="${main_icon}" style="${this.getStyle(iconDisplay)}" id="mainicon_${this._elementID}"></ha-icon><br>${text}<br><span id="mainicon_${this._elementID}" class="text_element_${this._elementID}">${this._config.name}</span>` as HtmlString;
+        return `${percent}<ha-icon icon="${main_icon}" style="${this.getStyle(iconDisplay)}" id="mainicon_${this._elementID}"></ha-icon><br>${text}<br><span style="${this.getStyle(textDisplay)}" class="text_element_${this._elementID}">${this._config.name}</span>` as HtmlString;
     }
 
     private calcAnimationParams(line: DeviceConnection): [ballsize: number, freq: number] {
@@ -199,9 +208,10 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
         const x1 = drawer.getCoordX(this._config.xPos);
         const y1 = drawer.getCoordY(this._config.yPos);
         const displayCircle = this.getDisplayConfig(config, states, "circle");
-        const circleRadius = displayCircle.circle_radius>0 ? displayCircle.circle_radius : this._card.circle_radius;
+        const circleRadius = displayCircle.circle_radius > 0 ? displayCircle.circle_radius : this._card.circle_radius;
+        const circleStyle = `${displayCircle.hidden ? 'style="display: none;"' : ""}`;
 
-        const node = `<circle cx="${x1}" cy="${y1}" r="${circleRadius}" fill="white" stroke="${displayCircle.color}" id="circle_${this._elementID}"/>
+        const node = `<circle cx="${x1}" cy="${y1}" r="${circleRadius}" fill="white" ${circleStyle} stroke="${displayCircle.color}" id="circle_${this._elementID}"/>
         <foreignObject x="${x1 - circleRadius}" y="${y1 - circleRadius}" width="${circleRadius * 2}" height="${circleRadius * 2}">
             <div xmlns="http://www.w3.org/1999/xhtml" id="cconts_${this._elementID}" class="circle-contents" style="width: ${circleRadius * 2}px; height: ${circleRadius * 2}px;">
                 ${this.getHtml(config, states)}
@@ -262,9 +272,12 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
             }
         }
         this._elements.circleHtml.innerHTML = this.getHtml(this._card, this._hass_states)
-        let circleDisplay = this.getDisplayConfig(this._card, this._hass_states, "circle");
-        this._elements.circle.setAttribute("r", `${circleDisplay.circle_radius > 0 ? circleDisplay.circle_radius : this._card.circle_radius}`)
-        this._elements.circle.setAttribute("stroke", circleDisplay.color)
+        let displayCircle = this.getDisplayConfig(this._card, this._hass_states, "circle");
+        const circleStyle = `${displayCircle.hidden ? 'display: none;' : ""}`;
+
+        this._elements.circle.setAttribute("style", circleStyle)
+        this._elements.circle.setAttribute("r", `${displayCircle.circle_radius > 0 ? displayCircle.circle_radius : this._card.circle_radius}`)
+        this._elements.circle.setAttribute("stroke", displayCircle.color)
     }
 
     hassUpdateCycleComplete(): boolean {

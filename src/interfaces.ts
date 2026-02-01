@@ -62,7 +62,7 @@ export interface DisplayConfig {
     color: string;
     size: number; // Standard size will  by multiplied by this. So 0.8 for 80% size, 1.5 for 150% size etc.
     circle_radius: number; // Only used in display and display-circle
-    hidden: boolean
+    hidden: boolean;
 }
 
 export interface DeviceConfig {
@@ -95,6 +95,9 @@ export interface CardConfig {
     height: number;
     circle_radius: number;
     debug?: boolean;
+    display: {
+        [suffix: string]: DisplayConfig
+    }
 }
 export interface FlowDevice {
     power_or_energy(states: States): number

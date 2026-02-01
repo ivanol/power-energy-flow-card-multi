@@ -7,7 +7,7 @@ export class ConfigManager {
     static displaySuffixSuffixes = ["", "-active", "-source", "-sink", "-inactive"]
     static displayKeys: string[] = this.displaySuffixes.map(s => this.displaySuffixSuffixes.map(ss => "display" + s + ss)).reduce((a, b) => a.concat(b), [])
 
-    static cardKeys = ["title", "devices", "circle_radius", "type", "debug", "grid_options"]
+    static cardKeys = ["title", "devices", "circle_radius", "type", "debug", "grid_options", ...this.displayKeys]
     static deviceKeys = ["xPos", "yPos", "id", "name",
         "energy_sink", "energy_source", "power_source", "power_sink", "max_power",
         "connections", "icon", "percent_entity", "floor",
@@ -30,7 +30,8 @@ export class ConfigManager {
             width: 400,
             height: 300,
             circle_radius: config.circle_radius ? config.circle_radius : 40,
-            debug: config.debug ? config.debug : false
+            debug: config.debug ? config.debug : false,
+            display: {}
         }
         this.validateUnknownKeys(config, ConfigManager.cardKeys, "Unknown key in card config: ")
 
@@ -40,6 +41,11 @@ export class ConfigManager {
             result.devices.push(this.validateDevice(d))
 
         this.validateReferences(result)
+
+        for (const k in config)
+            if (k.startsWith("display"))
+                result.display[k] = this.validateDisplay(config[k], k)
+
 
         return result
     }

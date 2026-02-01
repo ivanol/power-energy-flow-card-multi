@@ -1,10 +1,18 @@
-import { CardConfig, DeviceConfig, DeviceConnection } from "./interfaces";
+import { CardConfig, DeviceConfig, DeviceConnection, DisplayConfig } from "./interfaces";
 
 
 export class ConfigManager {
 
+    static displaySuffixes = ["", "-circle", "-icon", "-text"]
+    static displaySuffixSuffixes = ["", "-active", "-source", "-sink", "-inactive"]
+    static displayKeys: string[] = this.displaySuffixes.map(s => this.displaySuffixSuffixes.map(ss => "display" + s + ss)).reduce((a, b) => a.concat(b), [])
+
     static cardKeys = ["title", "devices", "circle_radius", "type", "debug", "grid_options"]
-    static deviceKeys = ["xPos", "yPos", "id", "name", "energy_sink", "energy_source", "power_source", "power_sink", "max_power", "connections", "icon", "percent_entity", "floor"]
+    static deviceKeys = ["xPos", "yPos", "id", "name",
+        "energy_sink", "energy_source", "power_source", "power_sink", "max_power",
+        "connections", "icon", "percent_entity", "floor",
+        ...this.displayKeys
+    ]
     static connectionKeys = ["desc", "target", "color", "mode", "entity", "internal"]
 
     // Takes a hass configuration object, and returns a valid CardConfig, or an error.
@@ -66,6 +74,19 @@ export class ConfigManager {
         }
     }
 
+    private validateDisplay(d: any, k: string): DisplayConfig {
+        if (!d) throw new Error("Empty display definition")
+        this.validateUnknownKeys(d, ["color", "size", "circle_radius", "hidden"], `Unknown key in display config ${k}: `)
+        if ("circle_radius" in d && k != "display" && !k.startsWith("display-circle"))
+            throw new Error("circle_radius can only be set in display or display-circle")
+        return {
+            color: d.color ? d.color : "black",
+            size: d.size ? d.size : 1,
+            circle_radius: d.circle_radius ? d.circle_radius : -1,
+            hidden: d.hidden ? d.hidden : false
+        }
+    }
+
     private validateDevice(d: any): DeviceConfig {
         if (!d) throw new Error("Empty device definition")
         if (!d.id) throw new Error("Device must have an id")
@@ -87,7 +108,8 @@ export class ConfigManager {
             floor: d.floor ? d.floor : 0,
             connections: [],
             max_power: d.max_power ? d.max_power : 20,
-            percent_entity: d.percent_entity ? d.percent_entity : undefined
+            percent_entity: d.percent_entity ? d.percent_entity : undefined,
+            display: {}
         }
 
         if (result.power_sink.length + result.power_source.length + result.energy_sink.length + result.energy_source.length == 0) {
@@ -98,6 +120,10 @@ export class ConfigManager {
             for (const c of d.connections)
                 result.connections.push(this.validateConnection(c))
         }
+
+        for (const k in d)
+            if (k.startsWith("display"))
+                result.display[k] = this.validateDisplay(d[k], k)
 
         return result
     }

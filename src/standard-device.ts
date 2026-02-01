@@ -1,4 +1,4 @@
-import { DeviceConfig, UpdateReceiver, UpdateSender, States, CardConfig, Drawer, DeviceConnection, HtmlString, FlowDevice } from "./interfaces";
+import { DeviceConfig, DisplayConfig, UpdateReceiver, UpdateSender, States, CardConfig, Drawer, DeviceConnection, HtmlString, FlowDevice } from "./interfaces";
 import { SVGDrawer } from "./svg-drawer";
 /*
  * A device represents both a conceptual device (eg. battery or inverter), and also the area
@@ -29,7 +29,8 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
     _inUpdateCycle: boolean = false;
     _valueCache: { power?: number, energyin?: number, energyout?: number } = {}
     _elements: {
-        circles?: HTMLElement[],
+        circles?: HTMLElement[], // For connection circles
+        circle?: HTMLElement, // For device circle
         animations?: HTMLElement[],
         lines?: HTMLElement[],
         circleHtml?: HTMLElement,
@@ -55,6 +56,7 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
         if(config.percent_entity) this._updateSender.registerUpdateReceiver(config.percent_entity, this);
     }
 
+    // Accessors
     get id(): string {
         return this._config.id
     }
@@ -63,6 +65,7 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
         return this._config.connections
     }
 
+    // Called when configuration is changed. We may now be listening to different entities.
     updateConfig(config: DeviceConfig) {
         for (const entity of [...this._config.power_sink, ...this._config.power_source, ...this._config.energy_sink, ...this._config.energy_source]) {
             this._updateSender.unregisterUpdateReceiver(entity, this);
@@ -75,6 +78,7 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
         this._config = config;
     }
 
+    // Find entityIds' values within states, check they're valid, convert W and Wh to kW and kWh if needed, and sum them.
     private sumEntities(states: States, entityIds: string[]): number {
         var result: number = 0;
         if (!states || !entityIds) return 0;
@@ -112,6 +116,7 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
         return this._valueCache.energyout
     }
 
+    // Energy doesn't really work at the moment, but maybe this will be useful in the future.
     power_or_energy(states: States): number {
         if (this._card.power_or_energy == "power") {
             return this.getPower(states)
@@ -124,13 +129,34 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
         return Math.round(value*100)/100;
     }
 
+    private getDisplayConfig(card: CardConfig, states: States, type: "circle" | "icon" | "text"): DisplayConfig {
+        let poe = this.power_or_energy(states)
+        let activitySuffix = poe > 0 ? "-source" : poe < 0 ? "-sink" : "-inactive"
+
+        // Look for most specific display config first.
+        let keys: string[] = []
+        keys.push(`display-${type}${activitySuffix}`)
+        if(activitySuffix=="-source" || activitySuffix=="-sink") keys.push(`display-${type}-active`)
+        keys.push(`display-${type}`)
+        keys.push('display')
+
+        for (const k of keys) {
+            if (k in this._config.display) {
+                return this._config.display[k]
+            }
+        }
+        return { color: "black", size: 1, circle_radius: -1, hidden: false }
+    }
+
     // Returns the html for the foreignObject in the middle of each circle.
     private getHtml(config: CardConfig, states: States): HtmlString {
         let text: string = "";
+        const textDisplay = this.getDisplayConfig(config, states, "text");
+        const iconDisplay = this.getDisplayConfig(config, states, "icon");
         if (config.power_or_energy == "power") {
             const power = this.getPower(states)
             const icon = power >= 0 ? "mdi:arrow-bottom-left" : "mdi:arrow-top-right";
-            text = `<span class="return" id="return_${this._elementID}"><ha-icon class="small" icon="${icon}"></ha-icon>${Math.abs(power)} kW</span>`
+            text = `<span class="return text_element_${this._elementID}" style="${this.getStyle(textDisplay)}" id="return_${this._elementID}"><ha-icon class="small" icon="${icon}"></ha-icon>${Math.abs(power)} kW</span>`
         } else {
             const energyIn = this.getEnergyIn(states);
             const energyOut = this.getEnergyOut(states);
@@ -142,7 +168,7 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
         let main_icon = this._config.icon
         if (this._config.percent_entity && states[this._config.percent_entity] && states[this._config.percent_entity].state !== "unavailable" && states[this._config.percent_entity].state !== "unknown") {
             let pct = Math.round(parseFloat(states[this._config.percent_entity].state)*10)/10
-            percent = `<div id="percent_${this._elementID}">${pct}%</div><br>`
+            percent = `<div id="percent_${this._elementID}" class="text_element_${this._elementID}" style="${this.getStyle(textDisplay)}">${pct}%</div><br>`
             if (main_icon == "") {
                 let pctd = Math.floor(pct / 10) * 10
                 if (pctd > 100) pctd = 100
@@ -150,7 +176,7 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
                 main_icon = `mdi:battery-${pctd}`
             }
         }
-        return `${percent}<ha-icon icon="${main_icon}"></ha-icon><br>${text}<br>${this._config.name}` as HtmlString;
+        return `${percent}<ha-icon icon="${main_icon}" style="${this.getStyle(iconDisplay)}" id="mainicon_${this._elementID}"></ha-icon><br>${text}<br><span id="mainicon_${this._elementID}" class="text_element_${this._elementID}">${this._config.name}</span>` as HtmlString;
     }
 
     private calcAnimationParams(line: DeviceConnection): [ballsize: number, freq: number] {
@@ -164,12 +190,18 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
         return [ballsize, freq]
     }
 
+    getStyle(DisplayConfig: DisplayConfig): string {
+        return `color: ${DisplayConfig.color}; ${DisplayConfig.hidden ? "display: none;" : ""}`;
+    }
+
     getPathHtml(config: CardConfig, states: States, drawer: Drawer): HtmlString {
         this._elements.needs_reload = true
         const x1 = drawer.getCoordX(this._config.xPos);
         const y1 = drawer.getCoordY(this._config.yPos);
-        const circleRadius = this._card.circle_radius;
-        const node = `<circle cx="${x1}" cy="${y1}" r="${circleRadius}" fill="white" stroke="black" />
+        const displayCircle = this.getDisplayConfig(config, states, "circle");
+        const circleRadius = displayCircle.circle_radius>0 ? displayCircle.circle_radius : this._card.circle_radius;
+
+        const node = `<circle cx="${x1}" cy="${y1}" r="${circleRadius}" fill="white" stroke="${displayCircle.color}" id="circle_${this._elementID}"/>
         <foreignObject x="${x1 - circleRadius}" y="${y1 - circleRadius}" width="${circleRadius * 2}" height="${circleRadius * 2}">
             <div xmlns="http://www.w3.org/1999/xhtml" id="cconts_${this._elementID}" class="circle-contents" style="width: ${circleRadius * 2}px; height: ${circleRadius * 2}px;">
                 ${this.getHtml(config, states)}
@@ -201,6 +233,7 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
         this._elements.animations = []
         this._elements.lines = []
         let lcnt = 1
+        this._elements.circle = card.querySelector(`#circle_${this._elementID}`)
         for (const l of this.connections) {
             const k = `#line_${this._elementID}_${lcnt}`
             lcnt += 1
@@ -229,6 +262,9 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
             }
         }
         this._elements.circleHtml.innerHTML = this.getHtml(this._card, this._hass_states)
+        let circleDisplay = this.getDisplayConfig(this._card, this._hass_states, "circle");
+        this._elements.circle.setAttribute("r", `${circleDisplay.circle_radius > 0 ? circleDisplay.circle_radius : this._card.circle_radius}`)
+        this._elements.circle.setAttribute("stroke", circleDisplay.color)
     }
 
     hassUpdateCycleComplete(): boolean {

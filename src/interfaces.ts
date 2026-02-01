@@ -58,6 +58,13 @@ export interface DeviceConnection {
     internal?: boolean // If true, this connection explains where a device gets its power/energy from, but doesn't subtract from the devices value.
 }
 
+export interface DisplayConfig {
+    color: string;
+    size: number; // Standard size will  by multiplied by this. So 0.8 for 80% size, 1.5 for 150% size etc.
+    circle_radius: number; // Only used in display and display-circle
+    hidden: boolean
+}
+
 export interface DeviceConfig {
     name: string;
     id: string;
@@ -73,6 +80,9 @@ export interface DeviceConfig {
     max_power: number // Maximum input/output power. Used to determine line sizes and power flow visualisations.
     percent_entity?: string // An entity that gives a percentage value for state of charge etc.
     floor: number  // Energy/flow below this value will be truncated to 0.
+    display: {
+        [suffix: string]: DisplayConfig
+    }
 }
 
 export interface CardConfig {

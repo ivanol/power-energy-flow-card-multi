@@ -2,5 +2,5 @@
     "name": "Power Energy Multiple Flows Card",
     "render_readme": true,
     "filename": "power-energy-flow-card-multi.js",
-    "content_in_root": true
+    "content_in_root": false
   }

@@ -149,11 +149,11 @@ export class PowerEnergyFlowMulti extends HTMLElement implements UpdateSender {
     }
 
     doListen() {
-        this._elements.card.addEventListener(
-            "click",
-            this.onClicked.bind(this),
-            false
-        );
+        //this._elements.card.addEventListener(
+        //    "click",
+        //    this.onClicked.bind(this),
+        //    false
+        //);
     }
 
     doUpdateConfig() {
@@ -216,7 +216,10 @@ export class PowerEnergyFlowMulti extends HTMLElement implements UpdateSender {
     forceRerender() {
         this._needsRerender = false;
         this.doCard();
-        this._elements.card_content.innerHTML = this._cardInnerHtml;
+        for (const device of this._devices)
+            device.addClickListener(this._elements.card);
+
+        //this._elements.card_content.innerHTML = this._cardInnerHtml;
     }
 
     doToggle() {

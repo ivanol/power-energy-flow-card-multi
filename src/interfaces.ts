@@ -79,6 +79,7 @@ export interface DeviceConfig {
     connections: DeviceConnection[]
     max_power: number // Maximum input/output power. Used to determine line sizes and power flow visualisations.
     percent_entity?: string // An entity that gives a percentage value for state of charge etc.
+    link?: string // URL to open when device is clicked.
     floor: number  // Energy/flow below this value will be truncated to 0.
     display: {
         [suffix: string]: DisplayConfig

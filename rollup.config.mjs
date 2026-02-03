@@ -5,11 +5,11 @@ export default {
     input: 'src/index.ts',
     output: [
 	{
-            file: 'dist/power-energy-flow-card-multi.js',
+            file: 'dist/power-energy-flow-card-multi.unmin.js',
             format: 'cjs'
         },
 	{
-            file: 'dist/power-energy-flow-card-multi.min.js',
+            file: 'dist/power-energy-flow-card-multi.js',
             format: 'iife',
 	    plugins: [terser()]
         }

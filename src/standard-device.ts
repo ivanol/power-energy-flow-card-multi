@@ -145,7 +145,6 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
         else keys.push(`display-inactive`)
         keys.push('display')
 
-        if(this._config.id=="grid") console.log("Display config keys to check:", keys)
         for (const k of keys) {
             if (k in this._config.display) {
                 return this._config.display[k]
@@ -238,6 +237,10 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
         return false;
     }
 
+    addClickListener(card: HTMLElement) {
+        this.searchElements(card); // This adds the click listener, and ensures we only do it once.
+    }
+
     private searchElements(card: HTMLElement) {
         if (!this._elements.needs_reload) return
         this._elements.circleHtml = card.querySelector(`#cconts_${this._elementID}`)
@@ -254,7 +257,23 @@ export class StandardDevice implements UpdateReceiver, FlowDevice {
             this._elements.lines.push(card.querySelector(k))
             //console.log("Finding circle and animate for ", this.id, "called", k+"_circle", k+"_animate")
         }
+        //console.log("Adding click listener to device", this._config.id, this._elements.circleHtml);
+        this._elements.circleHtml.addEventListener("click", this.onClicked.bind(this), false)
         this._elements.needs_reload = false
+    }
+
+    onClicked() {
+        if (this._config.link) {
+            if (this._config.link.startsWith("/")) {
+                window.history.pushState(null, "", this._config.link);
+                window.dispatchEvent(new Event('location-changed', {
+                    bubbles: true,
+                    composed: true
+                }));
+            } else {
+                window.location.replace(this._config.link);
+            }
+        }
     }
 
     incrementalUpdate(card: HTMLElement) {

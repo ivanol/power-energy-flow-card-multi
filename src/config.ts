@@ -8,7 +8,7 @@ export class ConfigManager {
     static displayKeys: string[] = this.displaySuffixes.map(s => this.displaySuffixSuffixes.map(ss => "display" + s + ss)).reduce((a, b) => a.concat(b), [])
 
     static cardKeys = ["title", "devices", "circle_radius", "type", "debug", "grid_options", ...this.displayKeys]
-    static deviceKeys = ["xPos", "yPos", "id", "name",
+    static deviceKeys = ["xPos", "yPos", "id", "name", "link",
         "energy_sink", "energy_source", "power_source", "power_sink", "max_power",
         "connections", "icon", "percent_entity", "floor",
         ...this.displayKeys
@@ -115,7 +115,8 @@ export class ConfigManager {
             connections: [],
             max_power: d.max_power ? d.max_power : 20,
             percent_entity: d.percent_entity ? d.percent_entity : undefined,
-            display: {}
+            display: {},
+            link: d.link ? d.link : undefined
         }
 
         if (result.power_sink.length + result.power_source.length + result.energy_sink.length + result.energy_source.length == 0) {

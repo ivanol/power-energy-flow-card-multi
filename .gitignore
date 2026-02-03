@@ -1,5 +1,6 @@
 node_modules/
 dist/
+!dist/power-energy-flow-card-multi.js
 *.swp
 *.swo
 *.local

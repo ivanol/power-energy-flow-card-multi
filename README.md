@@ -25,14 +25,18 @@ A device must have at least one entity that defines its power flow. This can be 
 Each of *power_source* and *power_sink* can contain a list of entities rather than a single one, and if both are defined then power_sinks will be subtracted from the power_sources to work out net power. This gives flexibility for using existing entities without needing to create helper sensors. If the sign is wrong on a sensor then just move it from *power_source* to *power_sink* or vice versa. If one CT clamp measures power to multiple devices, some of which have their own downstream entities for power measurement, then you can use this to separate everything out.
 
 Required keys for each device are: *xPos*, *yPos*, *id* (must be a unique id string for this card), and at least one of *power_source* or *power_sink*.
-Optionally you can also have *max_power* (used to know how to scale animations), *connections* (see below), *name* (what is displayed - defaults to *id*), and *icon*.
+Optionally you can also have *max_power* (used to know how to scale animations), *connections* (see below), *name* (what is displayed - defaults to *id*), *icon*, *link* (to follow when device is clicked on), and *percent_entity* (to display state of charge).
+
+If you specify a *percent_entity* but don't specify an *icon* then mdi:battery-X will be used, where X is the closest available state of charge.
 
 ### Connections
 
 Connections are the lines that you see between devices with the little animated balls moving along them.
-A connection has two essential keys in the config: *desc* *target*. *target* contains the *id* of the device that the other end of this line's power flow will go to. This is used for working out how much power to show going down the line, but has nothing to do with where the line is drawn. Drawing the line is the responsibility of *desc*, and this can make the line go wherever you want. I strongly recommend making sure it goes to the target, but you don't have to.
+A connection has two essential keys in the config: *desc* and *target*. *target* contains the *id* of the device that the other end of this line's power flow will go to. This is used for working out how much power to show going down the line, but has nothing to do with where the line is drawn. Drawing the line is the responsibility of *desc*, and this can make the line go wherever you want. I strongly recommend making sure it goes to the target, but you don't have to.
 
-Additionally a connection can contain optional keys *color*, and *mode*. *mode* can be "onedirection" for a connection that only moves power away from this device, or "reverse" for a connection that only moves power towards this device. All other devices are assumed to be bi-directional.
+A connection can contain optional keys *color*, and *mode*. *mode* can be "onedirection" for a connection that only moves power away from this device, or "reverse" for a connection that only moves power towards this device. All other devices are assumed to be bi-directional.
+
+A connection can optionally define *internal: true*. This means that the connected child device is producing part (or all) of the parent's power. This is used to work out powerflows. For example an inverter will have standard connections to grid, and house_load, but internal connections to the battery and solar that are attached to it.
 
 #### Line descriptions
 
@@ -53,7 +57,9 @@ A device can have multiple display rules within it, and the most specific one wi
 ## Complex/complete example
 The following should demonstrate all the available features, and will produce an image approximately like this.
 
-The above config will produce a card looking something like this ![sample card](https://raw.githubusercontent.com/ivanol/power-energy-flow-card-multi/refs/heads/main/doc/card2.gif)
+![sample card](https://raw.githubusercontent.com/ivanol/power-energy-flow-card-multi/refs/heads/main/doc/card2.gif)
+
+And the config:
 
 ```yaml
 type: custom:power-energy-flow-multi
@@ -64,18 +70,18 @@ display-circle-source: # Make the circle orange too.
   color: orange
 display-text-sink:     # If the device is consuming power we make the text red.
   color: red
-display-inactive:      # Grey everything (circle, text and icon) if power flow is 0.
+display-inactive:      # Grey everything (circle, text and icon) for a device with 0 power.
   color: grey
 devices:
   - id: grid
     name: Grid
     xPos: 0
     yPos: 1
-    power_sink: sensor.feed_in                # Split feed_in and consumption will be
-    power_source: sensor.grid_consumption     # combined
+    power_sink: sensor.feed_in                # Split feed_in and consumption entities
+    power_source: sensor.grid_consumption     # will be combined
     icon: mdi:transmission-tower
     floor: 0.05                               # We truncate to 0 if less than this
-    max_power: 15                             # Used to scale flow animations
+    max_power: 15                             # Used to scale flow animations. in kW
     display-source:
       color: red     # This overrides the global display above, so grid shows red if we're
     display-sink:    # importing. display-text-sink would just affect the text, but
@@ -111,7 +117,7 @@ devices:
     connections:
       - desc: 21                    # Down line one grid square
         target: battery
-        internal: true              # Means it's describing where the inverter
+        internal: true              # "internal" Means it's describing where the inverter
         color: cyan                 # gets its power from. We don't add the power
       - desc: 11                    # from battery to the inverters power.
         target: swsolar
